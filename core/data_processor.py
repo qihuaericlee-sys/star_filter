@@ -2,7 +2,8 @@ import json
 import logging
 from typing import Any, Dict, List, Tuple, Optional
 from pathlib import Path
-
+from tqdm import tqdm
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -102,23 +103,43 @@ class DataProcessor:
         filtered = []
         total = len(records)
         
-        # 处理每个记录
-        for idx, item in enumerate(records, 1):
+        # 创建tqdm进度条迭代器
+        progress_bar = tqdm(records, desc="正在过滤", unit="条", ncols=80)
+
+        for item in progress_bar:
             title = self.extract_title_from_item(item)
             if not title:
-                logger.warning(f"记录 {idx} 未找到标题字段，跳过")
                 continue
-            
+        
             is_celeb, resp = classifier.classify_title(title)
             if is_celeb:
                 filtered.append(item)
+        
+            # 更新进度条的后缀信息，显示当前处理的标题
+            progress_bar.set_postfix(当前标题=title[:20] + "...", refresh=False)
+        
+            # 如果处理速度较快，可以添加微小延迟以使进度更平滑
+            time.sleep(delay * 0.1)
+
+        progress_bar.close()
+
+        # 处理每个记录
+        # for idx, item in enumerate(records, 1):
+        #     title = self.extract_title_from_item(item)
+        #     if not title:
+        #         logger.warning(f"记录 {idx} 未找到标题字段，跳过")
+        #         continue
             
-            logger.info(f"[{idx}/{total}] {'KEEP' if is_celeb else 'DROP'} - {title[:100]}")
+        #     is_celeb, resp = classifier.classify_title(title)
+        #     if is_celeb:
+        #         filtered.append(item)
             
-            # 添加延迟
-            if idx < total and delay > 0:
-                import time
-                time.sleep(delay)
+        #     logger.info(f"[{idx}/{total}] {'KEEP' if is_celeb else 'DROP'} - {title[:100]}")
+            
+        #     # 添加延迟
+        #     if idx < total and delay > 0:
+        #         import time
+        #         time.sleep(delay)
         
         return filtered, total, len(filtered)
     
