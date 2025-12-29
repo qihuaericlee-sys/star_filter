@@ -1,7 +1,6 @@
-# 导出核心模块
 from .api_client import DeepSeekClient
 from .classifier import TitleClassifier
 from .data_processor import DataProcessor
+from .related_classifier import RelatedCelebrityClassifier  # 新增这一行
 
-__version__ = "1.0.0"
-__all__ = ['DeepSeekClient', 'TitleClassifier', 'DataProcessor']
+__all__ = ['DeepSeekClient', 'TitleClassifier', 'DataProcessor', 'RelatedCelebrityClassifier']

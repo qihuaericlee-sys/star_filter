@@ -15,7 +15,7 @@ from config.settings import (
     DEFAULT_OUTPUT_FILE, 
     DEFAULT_DELAY
 )
-from core import DeepSeekClient, TitleClassifier, DataProcessor
+from core import DeepSeekClient, TitleClassifier, DataProcessor, RelatedCelebrityClassifier
 from utils import setup_logger
 
 
@@ -60,6 +60,12 @@ def main():
         action="store_true",
         help="禁用请求延迟（不推荐，可能导致API限制）"
     )
+
+    parser.add_argument(
+        "--enhanced",
+        action="store_true",  # 启用时设为True
+        help="启用增强模式，对非直接明星标题进行关联明星推断"
+    )
     
     args = parser.parse_args()
     
@@ -87,9 +93,10 @@ def main():
         
         # 处理数据
         filtered_records, total, kept = processor.process_file(
-            input_path, 
-            classifier, 
-            delay=delay
+            input_path=Path(args.input),
+            classifier=classifier,
+            delay=delay,
+            enhance_model=args.enhanced
         )
         
         # 保存结果

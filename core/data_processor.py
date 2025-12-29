@@ -2,6 +2,8 @@ import json
 import logging
 from typing import Any, Dict, List, Tuple, Optional
 from pathlib import Path
+from .classifier import TitleClassifier
+from .related_classifier import RelatedCelebrityClassifier
 from tqdm import tqdm
 import time
 
@@ -84,7 +86,8 @@ class DataProcessor:
         self,
         input_path: Path,
         classifier,
-        delay: float = 0.5
+        delay: float = 0.5,
+        enhance_model = False
     ) -> Tuple[List, int, int]:
         """
         处理文件，过滤包含明星的条目
@@ -99,9 +102,15 @@ class DataProcessor:
         """
         # 加载数据
         records, container_key, original_data = self.load_json_file(input_path)
-        
         filtered = []
         total = len(records)
+
+        # 使用传入的分类器作为直接分类器
+        direct_classifier = classifier
+        related_classifier = None
+        if enhance_model:
+            # RelatedCelebrityClassifier 需要底层 client（如 OpenAI 客户端），使用 classifier.client
+            related_classifier = RelatedCelebrityClassifier(getattr(classifier, 'client', None))
         
         # 创建tqdm进度条迭代器
         progress_bar = tqdm(records, desc="正在过滤", unit="条", ncols=80)
@@ -109,17 +118,43 @@ class DataProcessor:
         for item in progress_bar:
             title = self.extract_title_from_item(item)
             if not title:
+                progress_bar.set_postfix_str('跳过: 无标题', refresh=False)
                 continue
-        
-            is_celeb, resp = classifier.classify_title(title)
+
+            output_item = None
+            current_reason = ""
+
+            # --- 阶段一：直接明星判断 ---
+            is_celeb, _ = direct_classifier.classify_title(title)
             if is_celeb:
-                filtered.append(item)
-        
-            # 更新进度条的后缀信息，显示当前处理的标题
-            progress_bar.set_postfix(当前标题=title[:20] + "...", refresh=False)
-        
-            # 如果处理速度较快，可以添加微小延迟以使进度更平滑
-            time.sleep(delay * 0.1)
+                output_item = dict(item)  # 创建副本
+                output_item["filter_reason"] = "direct_celebrity"
+                current_reason = f"直接明星: {title[:15]}..."
+
+            # --- 阶段二：关联明星推断 ---
+            elif enhance_model and related_classifier:
+                related_result = related_classifier.infer_related_celebrity(title)
+                if related_result and related_result.get("name"):
+                    # 成功推断出关联明星，创建新条目
+                    output_item = dict(item)
+                    output_item["original_title"] = title  # 保留原始标题
+                    output_item["title"] = related_result["name"]  # 替换为关联明星
+                    output_item["filter_reason"] = "inferred_celebrity"
+                    output_item["inference_reasoning"] = related_result.get("reasoning", "")
+                    current_reason = f"推断为: {related_result['name'][:15]}..."
+                else:
+                    # 无法推断，丢弃
+                    current_reason = "丢弃: 无关联明星"
+            else:
+                # 非增强模式，且非直接明星 -> 丢弃
+                current_reason = "丢弃: 非明星主题"
+
+            # 4. 更新进度条信息并收集结果
+            progress_bar.set_postfix_str(current_reason, refresh=False)
+            if output_item:
+                filtered.append(output_item)
+                # 可选：添加微小延迟，使进度条更平滑（对API延迟影响可忽略）
+                # time.sleep(delay * 0.05)
 
         progress_bar.close()
 
