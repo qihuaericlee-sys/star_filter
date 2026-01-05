@@ -7,8 +7,8 @@ from config.settings import DEEPSEEK_MODEL, CLASSIFIER_SYSTEM_PROMPT
 logger = logging.getLogger(__name__)
 
 
+"""标题分类器，用于判断标题是否包含明星信息"""
 class TitleClassifier:
-    """标题分类器，用于判断标题是否包含明星信息"""
     
     def __init__(self, client: OpenAI, model: str = None):
         """

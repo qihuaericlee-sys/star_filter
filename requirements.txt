@@ -1,2 +1,13 @@
 openai>=1.12.0
 python-dotenv>=1.0.0
+
+# 核心依赖
+requests>=2.31.0
+tqdm>=4.66.0
+
+# 微博爬虫特定依赖
+pycryptodome>=3.19.0  # 用于AES加密解密
+
+# 可选：数据处理
+pandas>=2.0.0  # 用于进一步的数据分析
+jq>=1.6.0  # 用于JSON数据查看

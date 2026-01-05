@@ -211,3 +211,75 @@ TypeError: DataProcessor.process_file() got an unexpected keyword argument 'clie
 2025-12-29 11:06:51,028 - star_filter - INFO - 保留比例: 80.0%
 2025-12-29 11:06:51,028 - star_filter - INFO - 输出文件: trends_export_filtered.json
 2025-12-29 11:06:51,028 - star_filter - INFO - ==================================================
+2025-12-30 09:16:51,540 - star_filter - INFO - 初始化DeepSeek客户端...
+2025-12-30 09:16:51,791 - star_filter - INFO - 初始化分类器...
+2025-12-30 09:16:51,791 - star_filter - INFO - 开始处理文件: trends_export.json
+2025-12-30 09:16:58,403 - star_filter - INFO - ==================================================
+2025-12-30 09:16:58,403 - star_filter - INFO - 处理完成!
+2025-12-30 09:16:58,403 - star_filter - INFO - 总记录数: 5
+2025-12-30 09:16:58,404 - star_filter - INFO - 保留记录数: 3
+2025-12-30 09:16:58,404 - star_filter - INFO - 过滤记录数: 2
+2025-12-30 09:16:58,404 - star_filter - INFO - 保留比例: 60.0%
+2025-12-30 09:16:58,404 - star_filter - INFO - 输出文件: trends_export_filtered.json
+2025-12-30 09:16:58,405 - star_filter - INFO - ==================================================
+2025-12-30 10:04:33,930 - fetch_and_filter - INFO - 开始抓取: 2025-12-20 -> 2025-12-24 (with_history=True)
+2025-12-30 10:04:38,469 - fetch_and_filter - ERROR - 未抓取到任何数据，退出
+2025-12-30 10:06:29,254 - fetch_and_filter - INFO - 开始抓取: 2025-12-20 -> 2025-12-24 (with_history=True)
+2025-12-30 10:08:54,032 - fetch_and_filter - INFO - 保存原始抓取数据到: data\weibo_raw.json
+2025-12-30 10:08:54,113 - fetch_and_filter - INFO - 初始化 DeepSeek 客户端并开始处理
+2025-12-30 10:08:54,709 - fetch_and_filter - ERROR - 处理过程中发生错误: 无法在JSON中找到列表记录结构
+Traceback (most recent call last):
+  File "C:\Users\14032\Desktop\star_filter\scripts\fetch_and_filter.py", line 79, in main
+    filtered_records, total, kept = processor.process_file(
+                                    ~~~~~~~~~~~~~~~~~~~~~~^
+        input_path=raw_path,
+        ^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        enhance_model=args.enhanced
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\14032\Desktop\star_filter\core\data_processor.py", line 104, in process_file
+    records, container_key, original_data = self.load_json_file(input_path)
+                                            ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\14032\Desktop\star_filter\core\data_processor.py", line 80, in load_json_file
+    raise ValueError("无法在JSON中找到列表记录结构")
+ValueError: 无法在JSON中找到列表记录结构
+2025-12-30 10:10:50,950 - star_filter - INFO - 初始化DeepSeek客户端...
+2025-12-30 10:10:51,516 - star_filter - INFO - 初始化分类器...
+2025-12-30 10:10:51,517 - star_filter - INFO - 开始处理文件: trends_export.json
+2025-12-30 10:11:00,469 - star_filter - INFO - ==================================================
+2025-12-30 10:11:00,469 - star_filter - INFO - 处理完成!
+2025-12-30 10:11:00,470 - star_filter - INFO - 总记录数: 5
+2025-12-30 10:11:00,470 - star_filter - INFO - 保留记录数: 3
+2025-12-30 10:11:00,470 - star_filter - INFO - 过滤记录数: 2
+2025-12-30 10:11:00,470 - star_filter - INFO - 保留比例: 60.0%
+2025-12-30 10:11:00,471 - star_filter - INFO - 输出文件: trends_export_filtered.json
+2025-12-30 10:11:00,471 - star_filter - INFO - ==================================================
+2025-12-30 10:19:16,314 - fetch_and_filter - INFO - 开始抓取: 2025-12-24 -> 2025-12-24 (with_history=True)
+2025-12-30 10:20:46,323 - fetch_and_filter - INFO - 保存原始抓取数据到: data\weibo_raw.json
+2025-12-30 10:20:46,340 - fetch_and_filter - INFO - 初始化 DeepSeek 客户端并开始处理
+2025-12-30 10:24:27,237 - fetch_and_filter - INFO - 处理完成
+2025-12-30 10:24:27,237 - fetch_and_filter - INFO - 总记录数: 50
+2025-12-30 10:24:27,238 - fetch_and_filter - INFO - 保留记录数: 25
+2025-12-30 10:24:27,238 - fetch_and_filter - INFO - 输出文件: data\weibo_filtered.json
+2025-12-30 11:22:25,223 - orchestrator - INFO - 开始抓取: 2025-12-24 -> 2025-12-24 (with_history=True)
+2025-12-30 11:24:35,888 - orchestrator - ERROR - 保存原始数据失败
+2025-12-30 11:27:20,904 - fetch_and_filter - INFO - 开始抓取: 2025-12-24 -> 2025-12-24 (with_history=True)
+2025-12-30 11:48:59,036 - orchestrator - INFO - 开始抓取: 2025-12-24 -> 2025-12-24 (with_history=True)
+2025-12-30 11:50:03,654 - fetch_and_filter - ERROR - 处理过程中发生错误: 'WeiboHotSearchFetcher' object has no attribute 'save_data'
+Traceback (most recent call last):
+  File "C:\Users\14032\Desktop\star_filter\scripts\fetch_and_filter.py", line 57, in main
+    result = fetch_and_process(
+        start_date=start_date,
+    ...<7 lines>...
+        delay=None,
+    )
+  File "C:\Users\14032\Desktop\star_filter\core\orchestrator.py", line 39, in fetch_and_process
+    saved = fetcher.save_data(all_data, filename=str(raw_path), with_history=with_history)
+            ^^^^^^^^^^^^^^^^^
+AttributeError: 'WeiboHotSearchFetcher' object has no attribute 'save_data'
+2025-12-30 11:55:26,726 - orchestrator - INFO - 开始抓取: 2025-12-24 -> 2025-12-24 (with_history=True)
+2025-12-30 11:56:21,172 - orchestrator - INFO - 初始化 DeepSeek 客户端并开始处理
+2025-12-30 11:59:43,068 - orchestrator - INFO - 抓取并处理完成
+2025-12-30 11:59:43,068 - fetch_and_filter - INFO - 处理完成: {'total': 50, 'kept': 25, 'filtered': 25, 'output_path': 'data\\weibo_filtered.json'}

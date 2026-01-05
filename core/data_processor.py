@@ -18,6 +18,11 @@ class DataProcessor:
         """
         从数据项中提取标题
         
+        优先规则：
+        - 如果有 `keyword` 字段，使用它（Weibo fetcher 带历史模式使用此字段）
+        - 如果有 `raw_data` 且为列表，则使用第一个元素作为标题
+        - 否则按常见字段名查找
+
         Args:
             item: 数据项字典
             
@@ -26,28 +31,44 @@ class DataProcessor:
         """
         if not isinstance(item, dict):
             return None
-        
+
+        # 优先 Weibo 格式的字段
+        if "keyword" in item and item.get("keyword"):
+            return str(item.get("keyword"))
+
+        raw = item.get("raw_data")
+        if isinstance(raw, list) and raw:
+            # raw_data 的第一个元素通常是关键词文本
+            first = raw[0]
+            if isinstance(first, str) and first:
+                return first
+
         # 可能的标题字段名
         title_fields = ["title", "Title", "name", "text", "headline", "topic"]
-        
+
         for key in title_fields:
             if key in item and item[key]:
                 return str(item[key])
-        
+
         return None
     
     @staticmethod
     def load_json_file(file_path: Path) -> Tuple[Optional[List], Optional[str], Dict]:
         """
         加载JSON文件并提取记录列表
-        
+
+        支持格式：
+        - 顶层是列表
+        - 顶层是字典且包含常见的容器键（如 items）
+        - 顶层是按日期索引的字典（例如 {"2025-12-20": {"items": [...]}, ...}），此时会展开为扁平记录列表，并在每条记录中加入 `_source_date` 字段以便回写
+
         Args:
             file_path: JSON文件路径
-            
+
         Returns:
             Tuple[Optional[List], Optional[str], Dict]: 
-                (记录列表, 容器键名, 原始数据)
-                
+                (记录列表, 容器键名 or 'by_date' 表示按日期展开, 原始数据)
+
         Raises:
             ValueError: 文件结构不支持
         """
@@ -57,30 +78,57 @@ class DataProcessor:
         except (json.JSONDecodeError, UnicodeDecodeError) as e:
             logger.error(f"无法解析JSON文件 {file_path}: {e}")
             raise
-        
-        # 假设顶层是列表
+
+        # 如果顶层是列表，直接返回
         if isinstance(data, list):
             return data, None, data
-        
-        # 如果是字典，尝试找到包含列表的键
-        elif isinstance(data, dict):
-            # 尝试常见的键名
+
+        # 顶层是字典，可能为按日期索引的结构
+        if isinstance(data, dict):
+            # 检查是否为日期索引（每个值是 dict 或 list 包含 items）
+            # 如果发现 date-like 结构，则展开
+            expanded = []
+            found_date_structure = False
+
+            for key, value in data.items():
+                # 忽略非日期和元数据项（例如：metadata 等）——但我们只要能找到 items/list 就处理
+                if isinstance(value, dict) and 'items' in value and isinstance(value['items'], list):
+                    for it in value['items']:
+                        if isinstance(it, dict):
+                            new_item = dict(it)
+                        else:
+                            new_item = {'raw_data': it}
+                        new_item['_source_date'] = key
+                        expanded.append(new_item)
+                    found_date_structure = True
+                elif isinstance(value, list):
+                    for it in value:
+                        if isinstance(it, dict):
+                            new_item = dict(it)
+                        else:
+                            new_item = {'raw_data': it}
+                        new_item['_source_date'] = key
+                        expanded.append(new_item)
+                    found_date_structure = True
+
+            if found_date_structure:
+                return expanded, 'by_date', data
+
+            # 否则按原有逻辑查找常见键名
             container_keys = ["items", "data", "rows", "trends", "results", "records"]
-            
             for key in container_keys:
                 if key in data and isinstance(data[key], list):
                     return data[key], key, data
-            
+
             # 回退：查找第一个列表值
             for key, value in data.items():
                 if isinstance(value, list):
                     logger.warning(f"使用非标准键名 '{key}' 作为容器")
                     return value, key, data
-            
+
             raise ValueError("无法在JSON中找到列表记录结构")
-        
-        else:
-            raise ValueError("不支持的JSON顶层结构")
+
+        raise ValueError("不支持的JSON顶层结构")
     
     def process_file(
         self,
@@ -187,22 +235,54 @@ class DataProcessor:
     ):
         """
         保存过滤后的数据
-        
-        Args:
-            filtered_records: 过滤后的记录列表
-            original_data: 原始数据
-            container_key: 容器键名（如果是嵌套结构）
-            output_path: 输出文件路径
+
+        兼容多种输入结构：
+        - 如果是按日期展开（container_key == 'by_date'），则把结果分配回对应日期下的 `items` 或列表中
+        - 如果是普通容器键，则直接替换
+        - 如果没有容器键（顶层列表），直接保存列表
         """
         # 构建输出数据结构
-        if container_key:
+        if container_key == 'by_date' and isinstance(original_data, dict):
+            out_data = dict(original_data)
+
+            # 初始化每个日期的目标容器
+            for date_key, value in out_data.items():
+                if isinstance(value, dict) and 'items' in value and isinstance(value['items'], list):
+                    out_data[date_key]['items'] = []
+                elif isinstance(value, list):
+                    out_data[date_key] = []
+                else:
+                    # 保持原样，如果需要可创建 items
+                    out_data[date_key] = value
+
+            # 分配每个过滤后的记录
+            for item in filtered_records:
+                src_date = item.pop('_source_date', None)
+                if not src_date:
+                    # 如果没有来源日期，追加到顶层（不常见）
+                    continue
+
+                if src_date not in out_data:
+                    # 新的日期键，创建并放入 items
+                    out_data[src_date] = {'items': [item]}
+                    continue
+
+                if isinstance(out_data[src_date], dict) and 'items' in out_data[src_date] and isinstance(out_data[src_date]['items'], list):
+                    out_data[src_date]['items'].append(item)
+                elif isinstance(out_data[src_date], list):
+                    out_data[src_date].append(item)
+                else:
+                    # 回退：将其覆盖为列表
+                    out_data[src_date] = [item]
+
+        elif container_key:
             out_data = dict(original_data)
             out_data[container_key] = filtered_records
         else:
             out_data = filtered_records
-        
+
         # 保存文件
         with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(out_data, f, ensure_ascii=False, indent=2)
-        
+
         logger.info(f"已保存过滤后的数据到: {output_path}")

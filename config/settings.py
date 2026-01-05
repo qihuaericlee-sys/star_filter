@@ -9,6 +9,9 @@ load_dotenv()
 # TODO: 修改此路径以适应你的项目结构
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+#爬取数据的密钥
+SECRET_KEY = os.getenv("SECRET_KEY", "")
+
 # API配置
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
 DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
