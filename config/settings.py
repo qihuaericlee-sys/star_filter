@@ -4,9 +4,6 @@ from dotenv import load_dotenv
 
 # 加载环境变量
 load_dotenv()
-
-# 项目根目录
-# TODO: 修改此路径以适应你的项目结构
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 #爬取数据的密钥
@@ -18,7 +15,16 @@ DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
 DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
 
 # 分类器配置
-CLASSIFIER_SYSTEM_PROMPT = """你是一个严格的分类器。判断给定标题是否包含明星（人名/艺名）信息。只回答大写的 YES 或 NO，不要添加额外说明。"""
+CLASSIFIER_SYSTEM_PROMPT = """你是一个严格的分类器。判断给定标题是否与娱乐明星相关。
+
+娱乐明星包括：演员、歌手、偶像、网红、主持人、模特、导演等娱乐圈人士。
+不包括：体育明星、政治人物、企业家、科学家、作家等非娱乐圈人士。
+
+判断标准：
+1. 标题中明确提到娱乐明星的名字或艺名
+2. 标题内容涉及娱乐明星的作品、活动、绯闻、动态等
+
+只回答大写的 YES 或 NO，不要添加额外说明。"""
 
 # 处理配置
 DEFAULT_DELAY = 0.5  # API请求之间的默认延迟（秒）

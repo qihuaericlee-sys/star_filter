@@ -283,3 +283,16 @@ AttributeError: 'WeiboHotSearchFetcher' object has no attribute 'save_data'
 2025-12-30 11:56:21,172 - orchestrator - INFO - 初始化 DeepSeek 客户端并开始处理
 2025-12-30 11:59:43,068 - orchestrator - INFO - 抓取并处理完成
 2025-12-30 11:59:43,068 - fetch_and_filter - INFO - 处理完成: {'total': 50, 'kept': 25, 'filtered': 25, 'output_path': 'data\\weibo_filtered.json'}
+2026-01-05 09:41:17,246 - orchestrator - INFO - 开始抓取: 2026-01-04 -> 2026-01-04 (with_history=True)
+2026-01-05 09:42:29,805 - orchestrator - INFO - 初始化 DeepSeek 客户端并开始处理
+2026-01-05 09:43:38,946 - orchestrator - INFO - 抓取并处理完成
+2026-01-05 09:43:38,947 - fetch_and_filter - INFO - 处理完成: {'total': 50, 'kept': 9, 'filtered': 41, 'output_path': 'data\\filtered.json'}
+2026-01-12 22:00:32,214 - orchestrator - INFO - 开始抓取: 2025-01-12 -> 2025-01-12 (with_history=True)
+2026-01-12 22:01:53,172 - orchestrator - INFO - 初始化 DeepSeek 客户端并开始处理
+2026-01-12 22:02:50,905 - orchestrator - INFO - 抓取并处理完成
+2026-01-12 22:02:50,906 - fetch_and_filter - INFO - 处理完成: {'total': 50, 'kept': 23, 'filtered': 27, 'output_path': 'data\\filtered.json'}
+2026-01-12 22:14:10,442 - orchestrator - INFO - 开始抓取: 2025-01-12 -> 2025-01-12 (with_history=True)
+2026-01-12 22:16:39,098 - orchestrator - INFO - 初始化 DeepSeek 客户端并开始处理
+2026-01-12 22:17:38,759 - orchestrator - INFO - 抓取并处理完成
+2026-01-12 22:17:38,760 - fetch_and_filter - INFO - 处理完成: {'total': 50, 'kept': 17, 'filtered': 33, 'output_path': 'data\\filtered.json'}
+2026-01-13 09:18:43,854 - orchestrator - INFO - 开始抓取: 2025-12-20 -> 2025-12-24 (with_history=True)
